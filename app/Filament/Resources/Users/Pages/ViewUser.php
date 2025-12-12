@@ -41,6 +41,14 @@ class ViewUser extends ViewRecord
                     TextEntry::make('name')->label('Nama'),
                     TextEntry::make('email'),
                     TextEntry::make('phone_number')->label('No. Telepon'),
+                    TextEntry::make('whatsapp')
+                        ->label('Hubungi via WhatsApp')
+                        ->state('Kirim Pesan WhatsApp')
+                        ->url(fn ($record) => $record->phone_number ? 'https://wa.me/' . preg_replace('/\D/', '', $record->phone_number) : null)
+                        ->openUrlInNewTab()
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->color('success')
+                        ->visible(fn ($record) => !empty($record->phone_number)),
                     TextEntry::make('role'),
                     TextEntry::make('created_at')->dateTime(),
                     TextEntry::make('updated_at')->dateTime(),
