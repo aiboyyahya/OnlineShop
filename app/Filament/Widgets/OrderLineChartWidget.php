@@ -8,20 +8,27 @@ use Illuminate\Support\Carbon;
 
 class OrderLineChartWidget extends ChartWidget
 {
-    protected ?string $heading = 'Pelanggan';
+    protected ?string $heading = 'Pelanggan Bulanan';
 
     protected static ?int $sort = 2;
 
-    protected int|string|array $columnSpan = 1;
+    protected int | string | array $columnSpan = 1;
 
     protected function getData(): array
     {
         $data = [];
+        $labels = [];
 
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $count = Transaction::whereDate('created_at', $date->toDateString())->distinct('customer_id')->count('customer_id');
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+
+            $count = Transaction::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->distinct('customer_id')
+                ->count('customer_id');
+
             $data[] = $count;
+            $labels[] = $date->translatedFormat('M Y');
         }
 
         return [
@@ -34,7 +41,7 @@ class OrderLineChartWidget extends ChartWidget
                     'fill' => true,
                 ],
             ],
-            'labels' => ['6 hari lalu', '5 hari lalu', '4 hari lalu', '3 hari lalu', '2 hari lalu', 'Kemarin', 'Hari ini'],
+            'labels' => $labels,
         ];
     }
 

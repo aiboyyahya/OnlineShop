@@ -18,11 +18,15 @@ class PendapatanResource extends Resource
 {
     protected static ?string $model = Transaction::class;
 
-    protected static ?string $navigationLabel = 'Pendapatan';
-
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-currency-dollar';
+
     protected static ?int $navigationSort = 1;
+
     protected static string|UnitEnum|null $navigationGroup = 'Manajemen Order';
+
+      protected static ?string $navigationLabel = 'Pendapatan';
+
+      protected static ?string $pluralModelLabel = 'Pendapatan';
 
     public static function form(Schema $schema): Schema
     {

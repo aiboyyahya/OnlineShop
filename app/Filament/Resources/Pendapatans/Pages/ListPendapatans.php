@@ -15,6 +15,13 @@ class ListPendapatans extends ListRecords
 
     public string $totalPendapatan = 'Rp 0';
 
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            \App\Filament\Widgets\PendapatanStatsWidget::class,
+        ];
+    }
+
     public function mount(): void
     {
         parent::mount();
@@ -47,26 +54,6 @@ class ListPendapatans extends ListRecords
 
         $this->totalPendapatan = 'Rp ' . number_format($query->sum('total'), 0, ',', '.');
     }
-    public function getTabs(): array
-{
-    return [
-        Tab::make('All'), 
-
-        Tab::make('Pending')
-            ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'pending')),
-
-        Tab::make('Packing')
-            ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'packing')),
-
-        Tab::make('Sent')
-            ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'sent')),
-
-        Tab::make('Done')
-            ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'done')),
-
-        Tab::make('Cancelled')
-            ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'cancelled')),
-    ];
-}
+ 
 
 }

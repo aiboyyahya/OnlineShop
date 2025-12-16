@@ -14,8 +14,8 @@ class Dashboard extends BaseDashboard
             \App\Filament\Widgets\OverviewStatsWidget::class,
             \App\Filament\Widgets\OrderChartWidget::class,
             \App\Filament\Widgets\OrderLineChartWidget::class,
+            \App\Filament\Widgets\PendapatanFullChartWidget::class,
             \App\Filament\Widgets\LatestOrdersWidget::class,
-
         ];
     }
 }

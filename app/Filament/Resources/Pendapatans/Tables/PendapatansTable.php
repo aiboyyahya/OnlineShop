@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Pendapatans\Tables;
 
+use App\Models\Transaction;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms;
@@ -19,6 +20,7 @@ class PendapatansTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->query(Transaction::where('status', 'done'))
             ->columns([
                 TextColumn::make('id')
                     ->sortable(),

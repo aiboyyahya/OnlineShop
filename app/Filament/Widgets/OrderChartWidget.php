@@ -8,39 +8,44 @@ use Illuminate\Support\Carbon;
 
 class OrderChartWidget extends ChartWidget
 {
-    protected ?string $heading = 'Statistik Pesanan';
+    protected ?string $heading = 'Statistik Pesanan ';
 
     protected static ?int $sort = 2;
 
     protected int | string | array $columnSpan = 1;
 
-  protected function getData(): array
-{
-    $data = [];
+    protected function getData(): array
+    {
+        $data = [];
+        $labels = [];
 
-    for ($i = 6; $i >= 0; $i--) {
-        $date = Carbon::now()->subDays($i);
-        $count = Transaction::whereDate('created_at', $date->toDateString())->count();
-        $data[] = $count;
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+
+            $count = Transaction::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+
+            $data[] = $count;
+            $labels[] = $date->translatedFormat('M Y');
+        }
+
+        return [
+            'datasets' => [
+                [
+                    'label' => 'Pesanan',
+                    'data' => $data,
+                    'backgroundColor' => 'rgba(75, 192, 192, 0.5)',
+                    'borderColor' => 'rgb(75, 192, 192)',
+                    'borderWidth' => 1,
+                ],
+            ],
+            'labels' => $labels,
+        ];
     }
 
-    return [
-        'datasets' => [
-            [
-                'label' => 'Pesanan',
-                'data' => $data,
-                'backgroundColor' => 'rgba(75, 192, 192, 0.5)',
-                'borderColor' => 'rgb(75, 192, 192)',
-                'borderWidth' => 1,
-            ],
-        ],
-        'labels' => ['6 hari lalu', '5 hari lalu', '4 hari lalu', '3 hari lalu', '2 hari lalu', 'Kemarin', 'Hari ini'],
-    ];
+    protected function getType(): string
+    {
+        return 'bar';
+    }
 }
-
-protected function getType(): string
-{
-    return 'bar'; // ubah dari 'line' ke 'bar'
-}
-
-} 

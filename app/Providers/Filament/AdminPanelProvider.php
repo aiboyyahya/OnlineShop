@@ -27,6 +27,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
+             ->sidebarWidth('16rem')
             ->path('admin')
             ->login(fn() => redirect()->route('google.redirect'))
             ->homeUrl(fn() => route('user.homepage'))
