@@ -9,14 +9,43 @@ use Illuminate\Support\Carbon;
 
 class PendapatanStatsWidget extends BaseWidget
 {
+    protected $listeners = ['pendapatan-filter-updated' => '$refresh'];
+
     protected function getStats(): array
     {
-        $todayIncome = Transaction::where('status', 'done')
-            ->whereDate('created_at', Carbon::today())
-            ->sum('total');
+        $filter = session('pendapatan_filter', []);
 
-        $monthIncome = Transaction::where('status', 'done')
-            ->whereMonth('created_at', Carbon::now()->month)
+        // If no filters are active, show current month data
+        if (empty($filter['startDate']) && empty($filter['endDate']) && empty($filter['businessCustomer'])) {
+            $query = Transaction::where('status', 'done')
+                ->whereMonth('created_at', Carbon::now()->month)
+                ->whereYear('created_at', Carbon::now()->year);
+        } else {
+            $query = Transaction::where('status', 'done');
+
+            if (!empty($filter['startDate']) && !empty($filter['endDate'])) {
+                $query->whereBetween('created_at', [$filter['startDate'], $filter['endDate']]);
+            } elseif (!empty($filter['startDate'])) {
+                $query->whereDate('created_at', '>=', $filter['startDate']);
+            } elseif (!empty($filter['endDate'])) {
+                $query->whereDate('created_at', '<=', $filter['endDate']);
+            }
+
+            if (!empty($filter['businessCustomer'])) {
+                if ($filter['businessCustomer'] == '1') {
+                    $query->whereHas('user', function ($q) {
+                        $q->where('is_business', true);
+                    });
+                } elseif ($filter['businessCustomer'] == '0') {
+                    $query->whereHas('user', function ($q) {
+                        $q->where('is_business', false);
+                    });
+                }
+            }
+        }
+
+        $todayIncome = (clone $query)->whereDate('created_at', Carbon::today())->sum('total');
+        $monthIncome = (clone $query)->whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
             ->sum('total');
 

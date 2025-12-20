@@ -19,8 +19,37 @@ class PendapatansTable
 {
     public static function configure(Table $table): Table
     {
+        $filter = session('pendapatan_filter', []);
+
+        // If no filters are active, return empty query
+        if (empty($filter['startDate']) && empty($filter['endDate']) && empty($filter['businessCustomer'])) {
+            $query = Transaction::whereRaw('1 = 0'); // Empty query
+        } else {
+            $query = Transaction::where('status', 'done');
+
+            if (!empty($filter['startDate']) && !empty($filter['endDate'])) {
+                $query->whereBetween('created_at', [$filter['startDate'], $filter['endDate']]);
+            } elseif (!empty($filter['startDate'])) {
+                $query->whereDate('created_at', '>=', $filter['startDate']);
+            } elseif (!empty($filter['endDate'])) {
+                $query->whereDate('created_at', '<=', $filter['endDate']);
+            }
+
+            if (!empty($filter['businessCustomer'])) {
+                if ($filter['businessCustomer'] == '1') {
+                    $query->whereHas('user', function ($q) {
+                        $q->where('is_business', true);
+                    });
+                } elseif ($filter['businessCustomer'] == '0') {
+                    $query->whereHas('user', function ($q) {
+                        $q->where('is_business', false);
+                    });
+                }
+            }
+        }
+
         return $table
-            ->query(Transaction::where('status', 'done'))
+            ->query($query)
             ->columns([
                 TextColumn::make('id')
                     ->sortable(),

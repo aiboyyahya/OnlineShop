@@ -11,6 +11,7 @@ class Dashboard extends BaseDashboard
     public function getWidgets(): array
     {
         return [
+            \App\Filament\Widgets\PendapatanFilterWidget::class,
             \App\Filament\Widgets\OverviewStatsWidget::class,
             \App\Filament\Widgets\OrderChartWidget::class,
             \App\Filament\Widgets\OrderLineChartWidget::class,

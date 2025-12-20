@@ -1,0 +1,5 @@
+-   [x] Update imports: Remove unused (Tables, SelectFilter, DateFilter, DatePicker, semicolon), add necessary (Filter, SelectFilter, DatePicker, Section, Select, Get)
+-   [x] Remove getTableQuery() override
+-   [x] Replace filtersForm with getTableFilters() method
+-   [x] Remove updatedTableFilters() method
+-   [x] Test the changes
