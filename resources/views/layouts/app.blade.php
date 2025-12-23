@@ -46,6 +46,7 @@
                 <div class="flex items-center space-x-4 lg:space-x-5 text-gray-700">
 
                     <div class="hidden lg:flex items-center space-x-8 font-medium text-sm">
+
                         <a href="{{ url('/') }}"
                             class="hover:text-gray-900 {{ request()->is('/') ? 'text-black font-semibold' : 'text-gray-600' }}">
                             Home
@@ -59,6 +60,7 @@
                                         d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
+
                             <div
                                 class="categories-menu absolute mt-2 hidden bg-white shadow-lg border rounded-md w-40 text-sm py-2 z-[9999]">
                                 @if (isset($categories) && $categories->count())
@@ -74,36 +76,20 @@
                             </div>
                         </div>
 
-                        <div class="relative products-dropdown">
-                            <button class="flex items-center space-x-1 text-gray-600 hover:text-gray-900">
-                                <span>Products</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <div
-                                class="products-menu absolute mt-2 hidden bg-white shadow-lg border rounded-md w-40 text-sm py-2 z-[9999]">
-                                <a href="{{ url('/produk') }}" class="block px-4 py-2 hover:bg-gray-100">All
-                                    Products</a>
-                            </div>
-                        </div>
+                        <a href="{{ url('/produk') }}"
+                            class="text-gray-600 hover:text-gray-900 {{ request()->is('produk*') ? 'text-black font-semibold' : '' }}">
+                            Products
+                        </a>
 
-                        <div class="relative pages-dropdown">
-                            <button class="flex items-center space-x-1 text-gray-600 hover:text-gray-900">
-                                <span>Pages</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <div
-                                class="pages-menu absolute mt-2 hidden bg-white shadow-lg border rounded-md w-40 text-sm py-2 z-[9999]">
-                                <a href="{{ route('articles.index') }}"
-                                    class="block px-4 py-2 hover:bg-gray-100">Articles</a>
-                                <a href="{{ route('kontak') }}" class="block px-4 py-2 hover:bg-gray-100">Contact</a>
-                            </div>
-                        </div>
+                        <a href="{{ route('articles.index') }}"
+                            class="text-gray-600 hover:text-gray-900 {{ request()->is('articles*') ? 'text-black font-semibold' : '' }}">
+                            Articles
+                        </a>
+
+                        <a href="{{ route('kontak') }}"
+                            class="text-gray-600 hover:text-gray-900 {{ request()->is('kontak') ? 'text-black font-semibold' : '' }}">
+                            Contact
+                        </a>
                     </div>
 
                     <div class="relative profile-dropdown hidden lg:flex items-center">
@@ -135,8 +121,8 @@
 
                     <a href="{{ route('reviews.index') }}"
                         class="hover:text-black relative hidden lg:flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
                         </svg>

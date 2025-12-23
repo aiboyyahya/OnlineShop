@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 
 class OverviewStatsWidget extends BaseWidget
 {
-    protected array | int | null $columns = 4;
+    protected array|int|null $columns = 4;
 
     protected $listeners = [
         'pendapatan-filter-updated' => '$refresh',
@@ -21,48 +21,30 @@ class OverviewStatsWidget extends BaseWidget
     {
         $filter = session('pendapatan_filter', []);
 
-        $startDate = !empty($filter['startDate'])
-            ? Carbon::parse($filter['startDate'])->startOfDay()
-            : null;
+        $month = isset($filter['month']) && is_numeric($filter['month'])
+            ? max(1, min(12, (int) $filter['month']))
+            : now()->month;
 
-        $endDate = !empty($filter['endDate'])
-            ? Carbon::parse($filter['endDate'])->endOfDay()
-            : null;
+        $year = isset($filter['year']) && is_numeric($filter['year'])
+            ? (int) $filter['year']
+            : now()->year;
+
+        $yearStart = Carbon::create($year, 1, 1)->startOfDay();
+        $yearEnd   = Carbon::create($year, 12, 31)->endOfDay();
+
+        $monthStart = Carbon::create($year, $month, 1)->startOfMonth();
+        $monthEnd   = Carbon::create($year, $month, 1)->endOfMonth();
 
         $baseQuery = Transaction::query()
-            ->where('status', 'done')
-            ->when($startDate && $endDate, fn ($q) =>
-                $q->whereBetween('created_at', [$startDate, $endDate])
-            )
-            ->when($startDate && !$endDate, fn ($q) =>
-                $q->where('created_at', '>=', $startDate)
-            )
-            ->when(!$startDate && $endDate, fn ($q) =>
-                $q->where('created_at', '<=', $endDate)
-            )
-            ->when(!empty($filter['businessCustomer']), fn ($q) =>
-                $q->whereHas('user', fn ($u) =>
-                    $u->where('is_business', $filter['businessCustomer'] === '1')
-                )
-            );
+            ->where('status', 'done');
 
-        $today = Carbon::today();
-        $monthStart = Carbon::now()->startOfMonth();
-        $monthEnd = Carbon::now()->endOfMonth();
+        $yearIncome = (clone $baseQuery)
+            ->whereBetween('created_at', [$yearStart, $yearEnd])
+            ->sum('total');
 
-        $todayIncome = (!$startDate || $today->gte($startDate)) &&
-            (!$endDate || $today->lte($endDate))
-            ? (clone $baseQuery)->whereDate('created_at', $today)->sum('total')
-            : 0;
-
-        $monthIncome = (
-            (!$startDate || $monthEnd->gte($startDate)) &&
-            (!$endDate || $monthStart->lte($endDate))
-        )
-            ? (clone $baseQuery)
-                ->whereBetween('created_at', [$monthStart, $monthEnd])
-                ->sum('total')
-            : 0;
+        $monthIncome = (clone $baseQuery)
+            ->whereBetween('created_at', [$monthStart, $monthEnd])
+            ->sum('total');
 
         $chart = [2, 4, 3, 5, 7, 9, 12];
 
@@ -87,18 +69,24 @@ class OverviewStatsWidget extends BaseWidget
                 ->columnSpan(1)
                 ->extraAttributes($statStyle),
 
-            Stat::make('Pendapatan Hari Ini', 'Rp ' . number_format($todayIncome, 0, ',', '.'))
-                ->description('Pendapatan')
+            Stat::make(
+                'Pendapatan Bulan ' . Carbon::create($year, $month)->translatedFormat('F Y'),
+                'Rp ' . number_format($monthIncome, 0, ',', '.')
+            )
+                ->description('Total Pendapatan')
                 ->descriptionIcon('heroicon-m-currency-dollar')
-                ->color('success')
+                ->color('primary')
                 ->chart($chart)
                 ->columnSpan(1)
                 ->extraAttributes($statStyle),
 
-            Stat::make('Pendapatan Bulan Ini', 'Rp ' . number_format($monthIncome, 0, ',', '.'))
-            ->description('Pendapatan')
+            Stat::make(
+                'Pendapatan Tahun ' . $year,
+                'Rp ' . number_format($yearIncome, 0, ',', '.')
+            )
+                ->description('Total Pendapatan')
                 ->descriptionIcon('heroicon-m-currency-dollar')
-                ->color('primary')
+                ->color('success')
                 ->chart($chart)
                 ->columnSpan(1)
                 ->extraAttributes($statStyle),

@@ -9,74 +9,86 @@ use Illuminate\Support\Carbon;
 
 class PendapatanStatsWidget extends BaseWidget
 {
-    protected $listeners = ['pendapatan-filter-updated' => '$refresh'];
+    protected $listeners = [
+        'pendapatan-filter-updated' => '$refresh',
+    ];
 
     protected function getStats(): array
     {
         $filter = session('pendapatan_filter', []);
 
-        
-        if (empty($filter['startDate']) && empty($filter['endDate']) && empty($filter['businessCustomer'])) {
-            $query = Transaction::where('status', 'done')
-                ->whereMonth('created_at', Carbon::now()->month)
-                ->whereYear('created_at', Carbon::now()->year);
-        } else {
-            $query = Transaction::where('status', 'done');
+        $month = isset($filter['month']) && is_numeric($filter['month'])
+            ? max(1, min(12, (int) $filter['month']))
+            : now()->month;
 
-            if (!empty($filter['startDate']) && !empty($filter['endDate'])) {
-                $query->whereBetween('created_at', [$filter['startDate'], $filter['endDate']]);
-            } elseif (!empty($filter['startDate'])) {
-                $query->whereDate('created_at', '>=', $filter['startDate']);
-            } elseif (!empty($filter['endDate'])) {
-                $query->whereDate('created_at', '<=', $filter['endDate']);
-            }
+        $year = isset($filter['year']) && is_numeric($filter['year'])
+            ? (int) $filter['year']
+            : now()->year;
 
-            if (!empty($filter['businessCustomer'])) {
-                if ($filter['businessCustomer'] == '1') {
-                    $query->whereHas('user', function ($q) {
-                        $q->where('is_business', true);
-                    });
-                } elseif ($filter['businessCustomer'] == '0') {
-                    $query->whereHas('user', function ($q) {
-                        $q->where('is_business', false);
-                    });
-                }
-            }
-        }
+        $monthName = Carbon::create($year, $month, 1)->translatedFormat('F');
 
-        $todayIncome = (clone $query)->whereDate('created_at', Carbon::today())->sum('total');
-        $monthIncome = (clone $query)->whereMonth('created_at', Carbon::now()->month)
-            ->whereYear('created_at', Carbon::now()->year)
+
+        $yearStart  = Carbon::create($year, 1, 1)->startOfDay();
+        $yearEnd    = Carbon::create($year, 12, 31)->endOfDay();
+
+        $monthStart = Carbon::create($year, $month, 1)->startOfMonth();
+        $monthEnd   = Carbon::create($year, $month, 1)->endOfMonth();
+
+         
+        $baseQuery = Transaction::query()
+            ->where('status', 'done');
+
+
+
+        $yearIncome = (clone $baseQuery)
+            ->whereBetween('created_at', [$yearStart, $yearEnd])
             ->sum('total');
-        $yearIncome = (clone $query)->whereYear('created_at', Carbon::now()->year)->sum('total');
+
+    
+        $monthIncome = (clone $baseQuery)
+            ->whereBetween('created_at', [$monthStart, $monthEnd])
+            ->sum('total');
+
+ 
+        $today = Carbon::today();
+        $todayIncome = (
+            $today->between($yearStart, $yearEnd)
+                ? (clone $baseQuery)
+                    ->whereDate('created_at', $today)
+                    ->sum('total')
+                : 0
+        );
 
         return [
-            Stat::make('Pendapatan Hari Ini', 'Rp ' . number_format($todayIncome, 0, ',', '.'))
-                ->description('Total pendapatan hari ini')
+            Stat::make(
+                'Pendapatan Hari Ini',
+                'Rp ' . number_format($todayIncome, 0, ',', '.')
+            )
+                ->description(' Total Hari ini')
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('success')
                 ->chart([2, 4, 3, 5, 7, 9, 12])
-                ->extraAttributes([
-                    'class' => 'text-center',
-                ]),
+                ->extraAttributes(['class' => 'text-center']),
 
-            Stat::make('Pendapatan Bulan Ini', 'Rp ' . number_format($monthIncome, 0, ',', '.'))
-                ->description('Total pendapatan bulan ini')
+            Stat::make(
+                'Pendapatan Bulan ' . $monthName ,
+                'Rp ' . number_format($monthIncome, 0, ',', '.')
+            )
+                ->description('Total Pendapatan Bulan' . ' ' . $monthName)
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('primary')
                 ->chart([5, 3, 4, 6, 8, 6, 10])
-                ->extraAttributes([
-                    'class' => 'text-center',
-                ]),
+                ->extraAttributes(['class' => 'text-center']),
 
-            Stat::make('Pendapatan Tahun Ini', 'Rp ' . number_format($yearIncome, 0, ',', '.'))
-                ->description('Total pendapatan tahun ini')
+            Stat::make(
+                'Pendapatan Tahun ' . $year,
+                'Rp ' . number_format($yearIncome, 0, ',', '.')
+            )
+                ->description('Total Pendapatan Tahun ' . $year)
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('warning')
                 ->chart([10, 15, 12, 18, 20, 22, 25])
-                ->extraAttributes([
-                    'class' => 'text-center',
-                ]),
+                ->extraAttributes(['class' => 'text-center']),
         ];
     }
 }
