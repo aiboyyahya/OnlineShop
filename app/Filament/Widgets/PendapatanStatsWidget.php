@@ -15,7 +15,7 @@ class PendapatanStatsWidget extends BaseWidget
     {
         $filter = session('pendapatan_filter', []);
 
-        // If no filters are active, show current month data
+        
         if (empty($filter['startDate']) && empty($filter['endDate']) && empty($filter['businessCustomer'])) {
             $query = Transaction::where('status', 'done')
                 ->whereMonth('created_at', Carbon::now()->month)
@@ -48,6 +48,7 @@ class PendapatanStatsWidget extends BaseWidget
         $monthIncome = (clone $query)->whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
             ->sum('total');
+        $yearIncome = (clone $query)->whereYear('created_at', Carbon::now()->year)->sum('total');
 
         return [
             Stat::make('Pendapatan Hari Ini', 'Rp ' . number_format($todayIncome, 0, ',', '.'))
@@ -64,6 +65,15 @@ class PendapatanStatsWidget extends BaseWidget
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('primary')
                 ->chart([5, 3, 4, 6, 8, 6, 10])
+                ->extraAttributes([
+                    'class' => 'text-center',
+                ]),
+
+            Stat::make('Pendapatan Tahun Ini', 'Rp ' . number_format($yearIncome, 0, ',', '.'))
+                ->description('Total pendapatan tahun ini')
+                ->descriptionIcon('heroicon-m-currency-dollar')
+                ->color('warning')
+                ->chart([10, 15, 12, 18, 20, 22, 25])
                 ->extraAttributes([
                     'class' => 'text-center',
                 ]),
